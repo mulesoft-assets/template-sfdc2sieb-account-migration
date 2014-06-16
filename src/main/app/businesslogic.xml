@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp"
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:data-mapper="http://www.mulesoft.org/schema/mule/ee/data-mapper" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:siebel="http://www.mulesoft.org/schema/mule/siebel" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/siebel http://www.mulesoft.org/schema/mule/siebel/current/mule-siebel.xsd
+http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
+http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/current/mule-data-mapper.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <data-mapper:config name="map_Salesforce_account_to_Siebel" transformationGraphPath="map_salesforce_account_to_siebel.grf" doc:name="map_Salesforce_account_to_Siebel"/>
+        
+    <batch:job name="syncAccountsBatch">
+        <batch:threading-profile poolExhaustedAction="WAIT"/>
+        <batch:input>
+            <sfdc:query config-ref="Salesforce" query="dsql:SELECT AccountNumber, AccountSource, AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Description, Fax, Industry, LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership, ParentId, Phone, Rating, ShippingCity, ShippingCountry, ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc, Site, TickerSymbol, Type, Website FROM Account WHERE NumberOfEmployees &gt; 5000 AND (Industry = 'Education' OR Industry = 'Government') AND LastModifiedDate &gt;= TODAY" doc:name="query all accounts from SalesForce"/>
+        </batch:input>
+        <batch:process-records>
+            <batch:step name="forEachAccountInSalesforceGetAccountInSiebelStep">
+                <enricher source="#[payload.isEmpty() ? NullPayload.getInstance() : payload[0]]" target="#[recordVars['siebelAccount']]" doc:name="store Siebel account in var 'siebelAccount'">
+                    <siebel:query-business-components config-ref="Oracle_Siebel_Business_Objects" businessObjectComponentType="Account.Account" searchExpression="Name = '#[payload['Name']]'" doc:name="query account from Siebel instance">
+                        <siebel:fields-to-retrieve>
+                            <siebel:fields-to-retrieve>Id</siebel:fields-to-retrieve>
+                            <siebel:fields-to-retrieve>Last Update - SDQ</siebel:fields-to-retrieve>
+                        </siebel:fields-to-retrieve>
+                    </siebel:query-business-components>
+                </enricher>
+            </batch:step>
+            <batch:step name="forEachAccountThatShouldBeUpsertedInSiebel" accept-expression="recordVars['siebelAccount'] is NullPayload || org.mule.templates.util.AccountDateComparator.isAfter(recordVars['siebelAccount'], payload, &quot;${sieb.timeOffset}&quot;) ">
+				<expression-component doc:name="prepare account for upsert"><![CDATA[System.err.println("heeeeeere");
+
+if (recordVars['siebelAccount'] is NullPayload) {
+	payload.remove('Id');
+} else {
+	payload.put('Id', recordVars['siebelAccount']['Id']);
+}
+]]></expression-component>
+                <data-mapper:transform config-ref="map_Salesforce_account_to_Siebel" doc:name="map Salesforce account to Siebel"/>
+                <siebel:upsert-business-component config-ref="Oracle_Siebel_Business_Objects" businessObjectComponentType="Account.Account" doc:name="upsert account in Siebel">
+                    <siebel:business-component-fields ref="#[payload]"/>
+                </siebel:upsert-business-component>
+                <logger message="Upsert Siebel response: #[payload]" level="INFO" doc:name="log response"/>
+            </batch:step>
+
+        </batch:process-records>
+        <batch:on-complete>
+            <scatter-gather doc:name="Scatter-Gather">
+                <processor-chain>
+                    <json:object-to-json-transformer doc:name="transform BatchJobInstance to JSON"/>
+                    <logger message="Migration process has finished: #[payload]" level="INFO" doc:name="log 'Migration process has finished'"/>
+                </processor-chain>
+                <processor-chain>
+                    <json:object-to-json-transformer doc:name="transform BatchJobInstance to JSON"/>
+                    <smtp:outbound-endpoint host="${smtp.host}" port="${smtp.port}" user="${smtp.user}" password="${smtp.password}" connector-ref="gmailConnector" to="${mail.to}" from="${mail.from}" subject="${mail.subject}" responseTimeout="10000" doc:name="send mail"/>
+                </processor-chain>
+            </scatter-gather>
+        </batch:on-complete>
+    </batch:job>
+    <flow name="mainFlow" doc:name="mainFlow">
+        <batch:execute name="syncAccountsBatch" doc:name="trigger syncAccountsBatch"/>
+        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
+    </flow>
+</mule>
