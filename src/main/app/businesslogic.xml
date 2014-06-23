@@ -30,7 +30,7 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
                 </enricher>
             </batch:step>
             <batch:step name="forEachAccountThatShouldBeUpsertedInSiebel" accept-expression="recordVars['siebelAccount'] is NullPayload || org.mule.templates.util.AccountDateComparator.isAfter(recordVars['siebelAccount'], payload, &quot;${sieb.timeOffset}&quot;) ">
-				<expression-component doc:name="prepare account for upsert"><![CDATA[System.err.println("heeeeeere");
+				<expression-component doc:name="prepare account for upsert"><![CDATA[
 
 if (recordVars['siebelAccount'] is NullPayload) {
 	payload.remove('Id');
