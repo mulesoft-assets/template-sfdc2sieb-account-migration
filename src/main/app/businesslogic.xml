@@ -29,7 +29,7 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
                     </siebel:query-business-components>
                 </enricher>
             </batch:step>
-            <batch:step name="forEachAccountThatShouldBeUpsertedInSiebel" accept-expression="recordVars['siebelAccount'] is NullPayload || org.mule.templates.util.AccountDateComparator.isAfter(recordVars['siebelAccount'], payload, &quot;${sieb.timeOffset}&quot;) ">
+            <batch:step name="forEachAccountThatShouldBeUpsertedInSiebel" accept-expression="recordVars['siebelAccount'] is NullPayload || org.mule.templates.date.DateUtils.stringToDateTimeWithProvidedOffset(payload['LastModifiedDate'], 'MM/dd/yyyy HH:mm:ss', '${sieb.timeOffset}').isAfter(org.mule.templates.date.DateUtils.ISOStringDateToDateTime(recordVars['siebelAccount']['Last Update - SDQ']))">
 				<expression-component doc:name="prepare account for upsert"><![CDATA[
 
 if (recordVars['siebelAccount'] is NullPayload) {
