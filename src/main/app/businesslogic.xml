@@ -16,12 +16,12 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
     <batch:job name="syncAccountsBatch">
         <batch:threading-profile poolExhaustedAction="WAIT"/>
         <batch:input>
-            <sfdc:query config-ref="Salesforce" query="dsql:SELECT AccountNumber, AccountSource, AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Description, Fax, Industry, LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership, ParentId, Phone, Rating, ShippingCity, ShippingCountry, ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc, Site, TickerSymbol, Type, Website FROM Account WHERE NumberOfEmployees &gt; 5000 AND (Industry = 'Education' OR Industry = 'Government') AND LastModifiedDate &gt;= TODAY" doc:name="query all accounts from SalesForce"/>
+            <sfdc:query config-ref="Salesforce" query="dsql:SELECT AccountNumber, AccountSource, AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Description, Fax, Industry, LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership, ParentId, Phone, Rating, ShippingCity, ShippingCountry, ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc, Site, TickerSymbol, Type, Website FROM Account WHERE NumberOfEmployees &gt; 5000 AND (Industry = 'Education' OR Industry = 'Government') AND LastModifiedDate &gt;= TODAY" doc:name="query all accounts from SalesForce with filtering criteria"/>
         </batch:input>
         <batch:process-records>
             <batch:step name="forEachAccountInSalesforceGetAccountInSiebelStep">
                 <enricher source="#[payload.isEmpty() ? NullPayload.getInstance() : payload[0]]" target="#[recordVars['siebelAccount']]" doc:name="store Siebel account in var 'siebelAccount'">
-                    <siebel:query-business-components config-ref="Oracle_Siebel_Business_Objects" businessObjectComponentType="Account.Account" searchExpression="Name = '#[payload['Name']]'" doc:name="query account from Siebel instance">
+                    <siebel:query-business-components config-ref="Oracle_Siebel_Business_Objects" businessObjectComponentType="Account.Account" searchExpression="Name = '#[payload['Name']]'" doc:name="query account from Siebel">
                         <siebel:fields-to-retrieve>
                             <siebel:fields-to-retrieve>Id</siebel:fields-to-retrieve>
                             <siebel:fields-to-retrieve>Last Update - SDQ</siebel:fields-to-retrieve>
@@ -38,7 +38,7 @@ if (recordVars['siebelAccount'] is NullPayload) {
 	payload.put('Id', recordVars['siebelAccount']['Id']);
 }
 ]]></expression-component>
-                <data-mapper:transform config-ref="map_Salesforce_account_to_Siebel" doc:name="map Salesforce account to Siebel"/>
+                <data-mapper:transform config-ref="map_Salesforce_account_to_Siebel" doc:name="transform Salesforce account to Siebel account"/>
                 <siebel:upsert-business-component config-ref="Oracle_Siebel_Business_Objects" businessObjectComponentType="Account.Account" doc:name="upsert account in Siebel">
                     <siebel:business-component-fields ref="#[payload]"/>
                 </siebel:upsert-business-component>
@@ -61,6 +61,6 @@ if (recordVars['siebelAccount'] is NullPayload) {
     </batch:job>
     <flow name="mainFlow" doc:name="mainFlow">
         <batch:execute name="syncAccountsBatch" doc:name="trigger syncAccountsBatch"/>
-        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
+        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="catch Exception and call defaultChoiceExceptionStrategy"/>
     </flow>
 </mule>
