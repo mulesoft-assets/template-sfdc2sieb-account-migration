@@ -16,7 +16,7 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
     <batch:job name="syncAccountsBatch">
         <batch:threading-profile poolExhaustedAction="WAIT"/>
         <batch:input>
-            <sfdc:query config-ref="Salesforce" query="dsql:SELECT AccountNumber, AccountSource, AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Description, Fax, Industry, LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership, ParentId, Phone, Rating, ShippingCity, ShippingCountry, ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc, Site, TickerSymbol, Type, Website FROM Account WHERE NumberOfEmployees &gt; 5000 AND (Industry = 'Education' OR Industry = 'Government') AND LastModifiedDate &gt;= TODAY" doc:name="query all accounts from SalesForce with filtering criteria"/>
+            <sfdc:query config-ref="Salesforce" query="dsql:SELECT AccountNumber, Description, Industry, LastModifiedDate, Name, NumberOfEmployees FROM Account WHERE NumberOfEmployees &gt; 5000 AND (Industry = 'Education' OR Industry = 'Government') AND LastModifiedDate &gt;= TODAY" doc:name="query all accounts from SalesForce with filtering criteria"/>
         </batch:input>
         <batch:process-records>
             <batch:step name="forEachAccountInSalesforceGetAccountInSiebelStep">
