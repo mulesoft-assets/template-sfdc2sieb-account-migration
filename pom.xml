@@ -10,7 +10,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>template-sfdc2sieb-account-migration</artifactId>
 	<packaging>mule</packaging>
-	<version>1.0.4-SNAPSHOT</version>
+	<version>1.0.4</version>
     <name>template-sfdc2sieb-account-migration Anypoint Template Project</name>
 
 	<properties>
@@ -21,7 +21,7 @@
 		<connection>scm:git:https://github.com/mulesoft/template-sfdc2sieb-account-migration.git</connection>
 		<developerConnection>scm:git:https://github.com/mulesoft/template-sfdc2sieb-account-migration.git</developerConnection>
 		<url>http://github.com/mulesoft/template-sfdc2sieb-account-migration</url>
-	  <tag>v1.0.1</tag>
+	  <tag>v1.0.4</tag>
   </scm>
 
 	<build>
