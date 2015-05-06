@@ -2,7 +2,16 @@
 
 <mule xmlns:json="http://www.mulesoft.org/schema/mule/json"
 	xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp"
-	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:data-mapper="http://www.mulesoft.org/schema/mule/ee/data-mapper" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:siebel="http://www.mulesoft.org/schema/mule/siebel" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" 
+	xmlns:data-mapper="http://www.mulesoft.org/schema/mule/ee/data-mapper" 
+	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" 
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch" 
+	xmlns:siebel="http://www.mulesoft.org/schema/mule/siebel" 
+	xmlns="http://www.mulesoft.org/schema/mule/core" 
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.1" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
 http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
@@ -11,12 +20,13 @@ http://www.mulesoft.org/schema/mule/siebel http://www.mulesoft.org/schema/mule/s
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/current/mule-data-mapper.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+
     <data-mapper:config name="map_Salesforce_account_to_Siebel" transformationGraphPath="map_salesforce_account_to_siebel.grf" doc:name="map_Salesforce_account_to_Siebel"/>
         
     <batch:job name="syncAccountsBatch">
         <batch:threading-profile poolExhaustedAction="WAIT"/>
         <batch:input>
-            <sfdc:query config-ref="Salesforce" query="dsql:SELECT AccountNumber, AccountSource, AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Description, Fax, Industry, LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership, ParentId, Phone, Rating, ShippingCity, ShippingCountry, ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc, Site, TickerSymbol, Type, Website FROM Account WHERE NumberOfEmployees &gt; 5000 AND (Industry = 'Education' OR Industry = 'Government') AND LastModifiedDate &gt;= TODAY" doc:name="query all accounts from SalesForce with filtering criteria"/>
+            <sfdc:query config-ref="Salesforce" query="dsql:SELECT AccountNumber, AccountSource, AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Description, Fax, Industry, LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership, ParentId, Phone, Rating, ShippingCity, ShippingCountry, ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc, Site, TickerSymbol, Type, Website FROM Account WHERE NumberOfEmployees &gt; 5000 AND LastModifiedDate &gt;= TODAY" doc:name="query all accounts from SalesForce with filtering criteria"/>
         </batch:input>
         <batch:process-records>
             <batch:step name="forEachAccountInSalesforceGetAccountInSiebelStep">
@@ -29,15 +39,12 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
                     </siebel:query-business-components>
                 </enricher>
             </batch:step>
-            <batch:step name="forEachAccountThatShouldBeUpsertedInSiebel" accept-expression="recordVars['siebelAccount'] is NullPayload || org.mule.templates.date.DateUtils.stringToDateTimeWithProvidedOffset(payload['LastModifiedDate'], 'MM/dd/yyyy HH:mm:ss', '${sieb.timeOffset}').isAfter(org.mule.templates.date.DateUtils.ISOStringDateToDateTime(recordVars['siebelAccount']['Last Update - SDQ']))">
-				<expression-component doc:name="prepare account for upsert"><![CDATA[
-
-if (recordVars['siebelAccount'] is NullPayload) {
+            <batch:step name="forEachAccountThatShouldBeUpsertedInSiebel" >
+				<expression-component doc:name="prepare account for upsert"><![CDATA[if (recordVars['siebelAccount'] instanceof NullPayload) {
 	payload.remove('Id');
 } else {
 	payload.put('Id', recordVars['siebelAccount']['Id']);
-}
-]]></expression-component>
+}]]></expression-component>
                 <data-mapper:transform config-ref="map_Salesforce_account_to_Siebel" doc:name="transform Salesforce account to Siebel account"/>
                 <siebel:upsert-business-component config-ref="Oracle_Siebel_Business_Objects" businessObjectComponentType="Account.Account" doc:name="upsert account in Siebel">
                     <siebel:business-component-fields ref="#[payload]"/>
@@ -47,19 +54,19 @@ if (recordVars['siebelAccount'] is NullPayload) {
 
         </batch:process-records>
         <batch:on-complete>
-            <scatter-gather doc:name="Scatter-Gather">
+            <scatter-gather doc:name="All">
                 <processor-chain>
-                    <json:object-to-json-transformer doc:name="transform BatchJobInstance to JSON"/>
-                    <logger message="Migration process has finished: #[payload]" level="INFO" doc:name="log 'Migration process has finished'"/>
+            		<json:object-to-json-transformer doc:name="transform BatchJobInstance to JSON"/>
+            		<logger message="Migration process has finished: #[payload]" level="INFO" doc:name="log 'Migration process has finished'"/>
                 </processor-chain>
-                <processor-chain>
-                    <json:object-to-json-transformer doc:name="transform BatchJobInstance to JSON"/>
+				<processor-chain>
+                    <parse-template location=".\src\main\resources\email\body.html" doc:name="Parse Template"/>
                     <smtp:outbound-endpoint host="${smtp.host}" port="${smtp.port}" user="${smtp.user}" password="${smtp.password}" connector-ref="gmailConnector" to="${mail.to}" from="${mail.from}" subject="${mail.subject}" responseTimeout="10000" doc:name="send mail"/>
-                </processor-chain>
+				</processor-chain>
             </scatter-gather>
         </batch:on-complete>
     </batch:job>
-    <flow name="mainFlow" doc:name="mainFlow">
+    <flow name="mainFlow" >
         <batch:execute name="syncAccountsBatch" doc:name="trigger syncAccountsBatch"/>
         <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="catch Exception and call defaultChoiceExceptionStrategy"/>
     </flow>

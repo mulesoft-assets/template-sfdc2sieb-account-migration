@@ -11,16 +11,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
-
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mule.MessageExchangePattern;
 import org.mule.api.MuleException;
 import org.mule.api.lifecycle.InitialisationException;
 import org.mule.processor.chain.InterceptingChainLifecycleWrapper;
 import org.mule.processor.chain.SubflowInterceptingChainLifecycleWrapper;
+import org.mule.tck.junit4.rule.DynamicPort;
 import org.mule.templates.AbstractTemplatesTestCase;
 
 import com.mulesoft.module.batch.BatchTestHelper;
@@ -49,6 +50,9 @@ public class BusinessLogicIT extends AbstractTemplatesTestCase {
 	
 	private static SubflowInterceptingChainLifecycleWrapper deleteAccountFromSalesforceFlow;
 	private static SubflowInterceptingChainLifecycleWrapper deleteAccountFromSiebelFlow;
+	
+	@Rule
+	public DynamicPort port = new DynamicPort("http.port");
 	
 	@Before
 	public void setUp() throws Exception {
@@ -89,7 +93,7 @@ public class BusinessLogicIT extends AbstractTemplatesTestCase {
 		// Wait for the batch job executed by the poll flow to finish
 		helper.awaitJobTermination(TIMEOUT_SEC * 1000, 500);
 		helper.assertJobWasSuccessful();
-		
+			
 		List<Map<String, Object>> response = (List<Map<String, Object>>) queryAccountFromSiebelFlow.process(getTestEvent(createdAccounts.get(0), MessageExchangePattern.REQUEST_RESPONSE)).getMessage().getPayload();
 		Assert.assertEquals("There should be only one account with this name", 1, response.size());
 		Assert.assertEquals("Description should match", "Old description", response.get(0).get("Description"));
