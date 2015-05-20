@@ -38,7 +38,7 @@ import com.sforce.soap.partner.SaveResult;
  */
 @SuppressWarnings("unchecked")
 public class BusinessLogicIT extends AbstractTemplatesTestCase {
-	protected static final int TIMEOUT_SEC = 120;
+	protected static final int TIMEOUT_SEC = 300;
 	protected static final String ANYPOINT_TEMPLATE_NAME = "account-migration";
 	private BatchTestHelper helper;
 
@@ -103,8 +103,8 @@ public class BusinessLogicIT extends AbstractTemplatesTestCase {
 	private void createTestDataInSandBox() throws MuleException, Exception {
 		HashMap<String, Object> account = new HashMap<String, Object>();
 		account.put("Name", ANYPOINT_TEMPLATE_NAME + "-" + System.currentTimeMillis() + "Account");
-		account.put("Phone", "123456789");
-		account.put("NumberOfEmployees", 6000);
+		account.put("Phone", "1234567890");
+		account.put("NumberOfEmployees", 120000);
 		account.put("Industry", "Education");
 
 		Map<String, Object> justCreatedAccount = (Map<String, Object>) account.clone();

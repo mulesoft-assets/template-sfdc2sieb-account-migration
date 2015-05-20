@@ -49,6 +49,7 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
                 <siebel:upsert-business-component config-ref="Oracle_Siebel_Business_Objects" businessObjectComponentType="Account.Account" doc:name="upsert account in Siebel">
                     <siebel:business-component-fields ref="#[payload]"/>
                 </siebel:upsert-business-component>
+                <json:object-to-json-transformer doc:name="Object to JSON"/>
                 <logger message="Upsert Siebel response: #[payload]" level="INFO" doc:name="log response"/>
             </batch:step>
 

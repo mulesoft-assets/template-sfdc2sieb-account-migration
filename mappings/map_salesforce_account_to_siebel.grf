@@ -37,10 +37,10 @@
 <Field __sourcePath="{}/Siebel_x0020Account/Bill_x0020To_x0020State" containerType="SINGLE" label="Bill To State" name="Bill_To_State" type="string"/>
 <Field __sourcePath="{}/Siebel_x0020Account/Bill_x0020To_x0020Street_x0020Address" containerType="SINGLE" label="Bill To Street Address" name="Bill_To_Street_Address" type="string"/>
 <Field __sourcePath="{}/Siebel_x0020Account/Description" containerType="SINGLE" label="Description" name="Description" type="string"/>
-<Field __sourcePath="{}/Siebel_x0020Account/Fax_x0020Number" containerType="SINGLE" label="Fax Number" name="Fax_Number" type="string"/>
+<Field __sourcePath="{}/Siebel_x0020Account/Main_x0020Fax_x0020Number" containerType="SINGLE" label="Main Fax Number" name="Main_Fax_Number" type="string"/>
 <Field __sourcePath="{}/Siebel_x0020Account/Name" containerType="SINGLE" label="Name" name="Name" type="string"/>
 <Field __sourcePath="{}/Siebel_x0020Account/Employees" containerType="SINGLE" label="Employees" name="Employees" type="string"/>
-<Field __sourcePath="{}/Siebel_x0020Account/Phone_x0020Number" containerType="SINGLE" label="Phone Number" name="Phone_Number" type="string"/>
+<Field __sourcePath="{}/Siebel_x0020Account/Main_x0020Phone_x0020Number" containerType="SINGLE" label="Main Phone Number" name="Main_Phone_Number" type="string"/>
 <Field __sourcePath="{}/Siebel_x0020Account/Rate" containerType="SINGLE" label="Rate" name="Rate" type="string"/>
 <Field __sourcePath="{}/Siebel_x0020Account/Ship_x0020To_x0020City" containerType="SINGLE" label="Ship To City" name="Ship_To_City" type="string"/>
 <Field __sourcePath="{}/Siebel_x0020Account/Ship_x0020To_x0020Country" containerType="SINGLE" label="Ship To Country" name="Ship_To_Country" type="string"/>
@@ -105,10 +105,10 @@ output.Name = input.Name;]]></attr>
   <clover:element clover:name="Bill To State">$0.Bill_To_State</clover:element>
   <clover:element clover:name="Bill To Street Address">$0.Bill_To_Street_Address</clover:element>
   <Description>$0.Description</Description>
-  <clover:element clover:name="Fax Number">$0.Fax_Number</clover:element>
+  <clover:element clover:name="Main Fax Number">$0.Main_Fax_Number</clover:element>
   <Name>$0.Name</Name>
   <Employees>$0.Employees</Employees>
-  <clover:element clover:name="Phone Number">$0.Phone_Number</clover:element>
+  <clover:element clover:name="Main Phone Number">$0.Main_Phone_Number</clover:element>
   <Rate>$0.Rate</Rate>
   <clover:element clover:name="Ship To City">$0.Ship_To_City</clover:element>
   <clover:element clover:name="Ship To Country">$0.Ship_To_Country</clover:element>
