@@ -28,18 +28,17 @@ Please review the terms of the license before downloading and using this templat
 # Use Case <a name="usecase"/>
 I want to synchronize accounts from Salesforce instance to Oracle Siebel Business Objects.
 
-This Template should serve as a foundation for the process of migrating accounts from Salesfoce instance to Oracle Siebel Business Objects, being able to specify filtering criteria and desired behavior when an account already exists in the Siebel. 
+This template should serve as a foundation for the process of migrating accounts from Salesforce instance to Oracle Siebel Business Objects, being able to specify filtering criteria and desired behavior when an account already exists in the Siebel instance. 
 
-As implemented, this Template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
+As implemented, this template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
 The batch job is divided to Input, Process and On Complete stages.
-During the Input stage the Template will query SalesForce for all the existing Accounts that match the filter criteria.
-During the Process stage, each Account will be filtered depending on, if it has an existing matching account in the Siebel and if the last updated date of the later is greater than the one of SalesForce.
-The last step of the Process stage will group the accounts and create them in Siebel.
-Finally during the On Complete stage the Template will both output statistics data into the console and send a notification email with the results of the batch execution.
+During the Input stage the template will query SalesForce for all the existing Accounts that match the filter criteria.
+During the Process stage the template will create the accounts in Siebel and update those which already exist.
+Finally during the On Complete stage the template will output statistics data into the console and send a notification email with the results of the batch execution to the group of configured email addresses.
 
 # Considerations <a name="considerations"/>
 
-To make this Anypoint Template run, there are certain preconditions that must be considered. All of them deal with the preparations in both, that must be made in order for all to run smoothly. **Failling to do so could lead to unexpected behavior of the template.**
+To make this Anypoint template run, there are certain preconditions that must be considered. All of them deal with the preparations in both, that must be made in order for all to run smoothly. **Failling to do so could lead to unexpected behavior of the template.**
 
 
 
@@ -104,13 +103,13 @@ In order to make the siebel connector work smoothly you have to provide the corr
 
 # Run it! <a name="runit"/>
 Simple steps to get Salesforce to Siebel Account Migration running.
-In any of the ways you would like to run this Template this is an example of the output you'll see after hitting the HTTP endpoint:
+No matter how you run this template, this is an example of the output you'll see after hitting the HTTP endpoint:
 
 <pre>
 <h1>Batch Process initiated</h1>
 <b>ID:</b>6eea3cc6-7c96-11e3-9a65-55f9f3ae584e<br/>
 <b>Records to Be Processed: </b>9<br/>
-<b>Start execution on: </b>Mon Jan 13 18:05:33 GMT-03:00 2014
+<b>Start execution on: </b>Tue Oct 13 10:05:33 GMT-03:00 2015
 </pre>
 
 ## Running on premise <a name="runonopremise"/>
@@ -151,7 +150,7 @@ Complete all properties in one of the property files, for example in [mule.prod.
 
 ## Running on CloudHub <a name="runoncloudhub"/>
 While [creating your application on CloudHub](http://www.mulesoft.org/documentation/display/current/Hello+World+on+CloudHub) (Or you can do it later as a next step), you need to go to Deployment > Advanced to set all environment variables detailed in **Properties to be configured** as well as the **mule.env**.
-Once your app is all set and started, supposing you choose as domain name `sfdc2siebaccountmigration` to trigger the use case you just need to hit `http://sfdc2siebaccountmigration.cloudhub.io/migrateaccounts` and report will be sent to the e-mails configured.
+Once your app is all set and started, supposing you choose `sfdc2siebaccountmigration` as domain name to trigger the use case, you just need to hit `http://sfdc2siebaccountmigration.cloudhub.io/migrateaccounts` and report will be sent to the email addresses configured.
 
 ### Deploying your Anypoint Template on CloudHub <a name="deployingyouranypointtemplateoncloudhub"/>
 Mule Studio provides you with really easy way to deploy your Template directly to CloudHub, for the specific steps to do so please check this [link](http://www.mulesoft.org/documentation/display/current/Deploying+Mule+Applications#DeployingMuleApplications-DeploytoCloudHub)
@@ -178,7 +177,7 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + sfdc.securityToken `ces56arl7apQs56XTddf34X`
 + sfdc.url `https://login.salesforce.com/services/Soap/u/32.0`
 
-#### EMail Details
+#### Email Details
 + mail.from `batch.migrateaccounts.migration%40mulesoft.com`
 + mail.to `cesar.garcia@mulesoft.com`
 + mail.subject `Batch Job Finished Report`
@@ -208,15 +207,15 @@ In the visual editor they can be found on the *Global Element* tab.
 
 
 ## businessLogic.xml<a name="businesslogicxml"/>
-This file holds the functional aspect of the Anypoint Template, directed by one flow responsible of conducting the business logic.
-For the purpose of this particular Template the *mainFlow* just executes a [Batch Job](http://www.mulesoft.org/documentation/display/current/Batch+Processing) which handles all its logic.
+This file holds the functional aspect of the Anypoint template, directed by one flow responsible of conducting the business logic.
+For the purpose of this particular template the *mainFlow* just executes a [Batch Job](http://www.mulesoft.org/documentation/display/current/Batch+Processing) which handles all its logic.
 This flow has Exception Strategy that basically consists on invoking the *defaultChoiseExceptionStrategy* defined in *errorHandling.xml* file.
 
 
 
 ## endpoints.xml<a name="endpointsxml"/>
-This is the file where you will found the inbound and outbound sides of your integration app.
-This Template has only a [HTTP Connector](http://www.mulesoft.org/documentation/display/current/HTTP+Connector) as the way to trigger the use case.
+This is the file where you will find the inbound and outbound sides of your integration app.
+This template has only a [HTTP Connector](http://www.mulesoft.org/documentation/display/current/HTTP+Connector) as the way to trigger the use case.
 
 ### Inbound Flow
 **HTTP Connector** - Start Report Generation
