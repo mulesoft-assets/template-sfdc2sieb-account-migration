@@ -106,7 +106,7 @@ public class BusinessLogicIT extends AbstractTemplatesTestCase {
 		account.put("Phone", "1234567890");
 		account.put("NumberOfEmployees", 120000);
 		account.put("Industry", "Education");
-
+		
 		Map<String, Object> justCreatedAccount = (Map<String, Object>) account.clone();
 		justCreatedAccount.put("Description", "Old description");
 		

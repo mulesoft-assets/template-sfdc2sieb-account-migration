@@ -1,25 +1,26 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<parent>
 		<groupId>org.mule.templates</groupId>
 		<artifactId>templates-tooling-parent-pom</artifactId>
-		<version>1.1.9</version>
+		<version>1.2.4</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>template-sfdc2sieb-account-migration</artifactId>
 	<packaging>mule</packaging>
-	<version>1.1.2-SNAPSHOT</version>
-    <name>template-sfdc2sieb-account-migration Anypoint Template Project</name>
+	<version>1.2.0-SNAPSHOT</version>
+	<name>template-sfdc2sieb-account-migration Anypoint Template Project</name>
 
 	<scm>
 		<connection>scm:git:https://github.com/mulesoft/template-sfdc2sieb-account-migration.git</connection>
 		<developerConnection>scm:git:https://github.com/mulesoft/template-sfdc2sieb-account-migration.git</developerConnection>
 		<url>http://github.com/mulesoft/template-sfdc2sieb-account-migration</url>
-	  <tag>HEAD</tag>
-  </scm>
-
+		<tag>HEAD</tag>
+	</scm>
+	
 	<build>
 		<plugins>
 			<plugin>
@@ -34,7 +35,7 @@
 						</inclusion>
 						<inclusion>
 							<groupId>org.mule.modules</groupId>
-							<artifactId>mule-module-siebel</artifactId>
+							<artifactId>siebel-businessobject</artifactId>
 						</inclusion>
 					</inclusions>
 				</configuration>
@@ -42,7 +43,7 @@
 		</plugins>
 	</build>
 
-	<dependencies>		
+	<dependencies>
 		<dependency>
 			<groupId>org.mule.modules</groupId>
 			<artifactId>mule-module-sfdc</artifactId>
@@ -50,7 +51,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mule.modules</groupId>
-			<artifactId>mule-module-siebel</artifactId>
+			<artifactId>siebel-businessobject</artifactId>
 			<version>${sieb.version}</version>
 		</dependency>
 		<dependency>
@@ -65,19 +66,25 @@
 			<version>8.1.1.11</version>
 			<scope>test</scope>
 		</dependency>
-	    <dependency>
-	            <groupId>org.mule.modules</groupId>
-	            <artifactId>mule-module-http</artifactId>
-	            <version>${mule.version}</version>
-	            <scope>provided</scope>
-	    </dependency>
-	    <dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-module-spring-config</artifactId>
-            <version>${mule.version}</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-module-http</artifactId>
+			<version>${mule.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-module-spring-config</artifactId>
+			<version>${mule.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.weave</groupId>
+			<artifactId>mule-plugin-weave_2.11</artifactId>
+			<version>${mule.version}</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
 
 	<repositories>
 		<repository>
@@ -87,9 +94,15 @@
 			<layout>default</layout>
 		</repository>
 		<repository>
-			<id>mulesoft-snapshots</id>
-			<name>MuleSoft Snapshots Repository</name>
-			<url>https://repository.mulesoft.org/nexus/content/repositories/snapshots/</url>
+			<id>mule-ee-releases</id>
+			<name>MuleSoft Releases EE Repository</name>
+			<url>https://repository.mulesoft.org/nexus/content/repositories/releases-ee/</url>
+			<layout>default</layout>
+		</repository>
+		<repository>
+			<id>mule-ee-snapshots</id>
+			<name>MuleEE Snapshots Repository</name>
+			<url>https://repository-master.mulesoft.org/nexus/content/repositories/ci-snapshots/</url>
 			<layout>default</layout>
 		</repository>
 		<repository>
