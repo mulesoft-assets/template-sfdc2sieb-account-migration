@@ -94,6 +94,18 @@
 			<layout>default</layout>
 		</repository>
 		<repository>
+			<id>mule-ee-releases</id>
+			<name>MuleSoft Releases EE Repository</name>
+			<url>https://repository.mulesoft.org/nexus/content/repositories/releases-ee/</url>
+			<layout>default</layout>
+		</repository>
+		<repository>
+			<id>mule-ee-snapshots</id>
+			<name>MuleEE Snapshots Repository</name>
+			<url>https://repository-master.mulesoft.org/nexus/content/repositories/ci-snapshots/</url>
+			<layout>default</layout>
+		</repository>
+		<repository>
 			<id>mule-ee-thirdparty</id>
 			<name>MuleSoft Thirdparty Repository</name>
 			<url>https://repository.mulesoft.org/nexus/content/repositories/thirdparty/</url>
