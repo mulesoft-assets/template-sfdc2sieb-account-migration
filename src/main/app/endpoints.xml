@@ -15,7 +15,6 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
     <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="${http.port}" doc:name="HTTP Listener Configuration"/>
 
-
     <flow name="triggerFlow"  processingStrategy="synchronous" doc:description="This is the simpliest entry point to start the excecution of your Template
 Here you should: 
 	* Define any inbound endpoint
@@ -28,7 +27,6 @@ Here you should not:
         <flow-ref name="mainFlow" doc:name="trigger mainFlow"/>
 
         <set-payload value="&lt;h1&gt;Batch Process initiated&lt;/h1&gt;&lt;b&gt;ID:&lt;/b&gt;#[payload.getId()]&lt;br/&gt;&lt;b&gt;Records to Be Processed: &lt;/b&gt;#[payload.getRecordCount()]&lt;br/&gt; &lt;b&gt;Start execution on: &lt;/b&gt;#[new java.util.Date()]" doc:name="set to Batch status response"/>
-
 
     </flow>
     

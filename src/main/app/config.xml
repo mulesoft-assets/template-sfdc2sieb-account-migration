@@ -7,7 +7,6 @@
 	xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp" 
 	xmlns:spring="http://www.springframework.org/schema/beans" 
 	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc"
-	 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
@@ -18,7 +17,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 >
 
 	
-	<!-- This is the main configuration files, you should place here all the Connectors configuration an declarations -->
+	<!-- This is the main configuration files, you should place here all the Connectors configuration and declarations -->
 
     <context:property-placeholder location="common.properties, mule.${mule.env}.properties"/>
     
