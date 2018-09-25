@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:siebel="http://www.mulesoft.org/schema/mule/siebel"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/siebel http://www.mulesoft.org/schema/mule/siebel/current/mule-siebel.xsd">
+
+	
+	<flow name="businessLogicFlow" doc:id="884f86c5-66e1-4701-bb9b-594c2a60abf3" >
+    <salesforce:query doc:name="Accounts from SalesForce with filtering criteria" doc:id="8acb085e-e087-4642-80f1-8b98146994b9" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query >SELECT AccountNumber, AccountSource, AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Description, Fax, Industry, LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership, ParentId, Phone, Rating, ShippingCity, ShippingCountry, ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc, Site, TickerSymbol, Type, Website FROM Account WHERE NumberOfEmployees &gt; 5000 AND LastModifiedDate &gt;= LAST_N_DAYS:1</salesforce:salesforce-query>
+		</salesforce:query>
+		<batch:job jobName="migrateObjectsBatch" doc:id="79b373e6-1aeb-43a9-9dfe-8ac0d2f31fdc" blockSize="${page.size}">
+        <batch:process-records >
+				<batch:step name="getAccountsFromSalesforce" doc:id="232087de-e311-49c1-a890-439c65ea1af2" >
+					<ee:transform doc:name="Set account variable and query for Siebel"
+						doc:id="8c631b08-c1f8-42b0-96cb-bf229be6cc0e">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	SiebelMessage: {
+		"ListOfAccount IO": [{
+			Account: {
+				searchspec: "[Name] = '" ++ payload.Name ++ "'"
+				
+			}
+		}]
+	}
+}]]></ee:set-payload>
+						</ee:message>
+						<ee:variables>
+							<ee:set-variable variableName="account"><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-variable>
+						</ee:variables>
+
+
+					</ee:transform>
+					<siebel:execute-siebel-adapter integrationObject="Account IO" doc:name="Execute siebel adapter" doc:id="f0b8964c-7843-49f7-b63b-3cff9dfb6bd0" config-ref="Siebel_JDB_Siebel" method="QUERY"/>
+					<ee:transform doc:name="Set Siebel Account ID"
+						doc:id="e00358f0-edb1-4320-8754-267fc20bd228">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+vars.account ++ {
+	SiebelID: if ( payload.PrimaryRowId != null) payload.PrimaryRowId else null 
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+            </batch:step>
+            <batch:step name="upsertAccountsInSalesforceStep" doc:id="78a74ab4-9b91-416d-985a-acda2ac377eb">
+					<ee:transform doc:name="SFDC Account to Siebel Account" doc:id="782449a6-d677-4e26-a07d-e4dfaabb65ad" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"Name": payload.Name,
+	"Employees": payload.NumberOfEmployees,
+	"Description": (if (payload.Description != null and (sizeOf(payload.Description) < 255))  payload.Description else payload.Description[0 to 254] ),
+	"Id": payload.SiebelID,
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<siebel:upsert-business-component businessObjectComponentType="Account.Account" doc:name="Upsert Account in Siebel" doc:id="e2c51203-f9bb-4948-8377-c3fbf6e7fde1" config-ref="Siebel_JDB_Siebel"/>
+					<logger level="INFO" doc:name="Log upsert response" doc:id="7b58825b-f9f5-474a-88b5-31e11e2f87ae" message="#[output application/json --- payload]" />
+            </batch:step>
+        </batch:process-records>
+        <batch:on-complete >
+            <scatter-gather doc:name="Scatter-Gather" doc:id="ef2964ef-0b85-4c6c-a5ee-b834df639e7b">
+                <route>
+                    <logger level="INFO" doc:name="Migration process has finished!" doc:id="b7575d38-7dbd-4602-9186-1bbb25234896" message="Migration process has finished!" />
+                </route>
+                <route>
+                    <ee:transform doc:name="Prepare migration result email"
+                                  doc:id="c84b4bc4-5a65-41c1-9d0c-f1ebd3d8db7a">
+                        <ee:message>
+                            <ee:set-payload><![CDATA[%dw 2.0
+ output text/plain
+ ---
+ "Migration Report: \n"
+
+ ++ "\n Time [milliseconds]: " 		++ payload.elapsedTimeInMillis!
+ ++ "\n Total Records: "			++ payload.totalRecords!
+ ++ "\n Successful Records: "		++ payload.successfulRecords!
+ ++ "\n Failed Records: "			++ payload.failedRecords!
+ ++ "\n Loaded Records: "			++ payload.loadedRecords!
+ ++ "\n Processed Records: " 		++ payload.processedRecords!]]></ee:set-payload>
+                        </ee:message>
+                    </ee:transform>
+                    <email:send config-ref="Gmail_SMTP" doc:name="Send migration result email"
+                                doc:id="5896eaa9-dd10-47a2-a6fc-6319b11dbd06" fromAddress="${mail.from}"
+                                subject="${mail.subject}">
+                        <email:to-addresses>
+                            <email:to-address value="${mail.to}" />
+                        </email:to-addresses>
+                    </email:send>
+                </route>
+            </scatter-gather>
+        </batch:on-complete>
+    </batch:job>
+</flow>
+<flow name="mainFlow" doc:id="7c0a5bef-b3d5-442f-bff3-10d038f69a5e" >
+    <flow-ref doc:name="businessLogicFlow" doc:id="91360ede-4d71-44c7-9b64-8ee762e04ea0" name="businessLogicFlow"/>
+    <error-handler >
+        <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="488b507d-e26c-4c56-8759-8bb4f6645d71" type="ANY">
+            <flow-ref doc:name="errorHandlingFlow" doc:id="afdaf73c-0137-4d60-84f6-5c41234771a3" name="errorHandlingFlow" />
+        </on-error-propagate>
+    </error-handler>
+</flow>
+</mule>
+
+
+        
