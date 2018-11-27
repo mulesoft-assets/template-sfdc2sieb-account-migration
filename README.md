@@ -13,9 +13,9 @@ I want to synchronize accounts from Salesforce instance to Oracle Siebel Busines
 
 This template should serve as a foundation for the process of migrating accounts from Salesforce instance to Oracle Siebel Business Objects, being able to specify filtering criteria and desired behavior when an account already exists in the Siebel instance. 
 
-As implemented, this template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
+As implemented, this template leverage the Mule batch module.
 The batch job is divided to Process and On Complete stages.
-The template will query SalesForce for all the existing Accounts that match the filter criteria.
+The template queries SalesForce for all the existing Accounts that match the filter criteria.
 During the Process stage the template will create the accounts in Siebel and update those which already exist.
 Finally during the On Complete stage the template will output statistics data into the console and send a notification email with the results of the batch execution to the group of configured email addresses.
 <!-- Use Case (end) -->
@@ -26,7 +26,7 @@ Finally during the On Complete stage the template will output statistics data in
 <!-- Default Considerations (end) -->
 
 <!-- Considerations (start) -->
-To make this Anypoint template run, there are certain preconditions that must be considered. All of them deal with the preparations in both, that must be made in order for all to run smoothly. **Failing to do so could lead to unexpected behavior of the template.**
+To make this Anypoint template run, there are certain preconditions that must be considered. All of them deal with the preparations in both, that must be made for the template to run smoothly. **Failing to do so could lead to unexpected behavior of the template.**
 <!-- Considerations (end) -->
 
 
@@ -81,7 +81,7 @@ In order to make the siebel connector work smoothly you have to provide the corr
 # Run it!
 Simple steps to get this template running.
 <!-- Run it (start) -->
-No matter how you run this template, this is an example of the output you'll see after hitting the HTTP endpoint:
+No matter how you run this template, this is an example of the output you'll see after browse toting the HTTP endpoint:
 
 {
     "Message": "Batch Process initiated",
@@ -135,7 +135,7 @@ Update the properties in one of the property files, for example in mule.prod.pro
 ## Running on CloudHub
 When creating your application in CloudHub, go to Runtime Manager > Manage Application > Properties to set the environment variables listed in "Properties to Configure" as well as the mule.env value.
 <!-- Running on Cloudhub (start) -->
-Once your app is all set and started, supposing you choose `sfdc2siebaccountmigration` as domain name to trigger the use case, you just need to hit `http://sfdc2siebaccountmigration.cloudhub.io/migrateaccounts` and report will be sent to the email addresses configured.
+Once your app is all set and started, supposing you choose `sfdc2siebaccountmigration` as domain name to trigger the use case, you just need to browse to `http://sfdc2siebaccountmigration.cloudhub.io/migrateaccounts` and report will be sent to the email addresses configured.
 <!-- Running on Cloudhub (end) -->
 
 ### Deploying a Template in CloudHub
@@ -203,7 +203,7 @@ This file provides the configuration for connectors and configuration properties
 ## businessLogic.xml
 <!-- Default Business Logic XML (start) -->
 This file holds the functional aspect of the Anypoint template, directed by one flow responsible of conducting the business logic.
-For the purpose of this particular template the *mainFlow* just executes a [Batch Job](http://www.mulesoft.org/documentation/display/current/Batch+Processing) which handles all its logic.
+For the purpose of this particular template the *mainFlow* just executes a batch job which handles all its logic.
 This flow has Exception Strategy that basically consists on invoking the *defaultChoiseExceptionStrategy* defined in *errorHandling.xml* file.<!-- Default Business Logic XML (end) -->
 
 <!-- Business Logic XML (start) -->
